@@ -1,7 +1,7 @@
 # Set environment variables
-export COMPUTE_GROUP?=swarm-cluster
-export STORAGE_GROUP?=swarm-storage
-export LOCATION?=eastus
+export COMPUTE_GROUP?=ilabconnect-staging
+export STORAGE_GROUP?=ilabconnect-staging
+export LOCATION?=eastus2
 export MASTER_COUNT?=1
 export AGENT_COUNT?=3
 export MASTER_FQDN=$(COMPUTE_GROUP)-master0.$(LOCATION).cloudapp.azure.com
@@ -45,14 +45,14 @@ params:
 		--resource-group $(STORAGE_GROUP) \
     	--account-name $(STORAGE_ACCOUNT_NAME) \
 		--query "[0].value" | tr -d '"'))
-	@mkdir parameters 2> /dev/null; STORAGE_ACCOUNT_KEY=$(STORAGE_ACCOUNT_KEY) python genparams.py > parameters/cluster.json
+	@mkdir parameters 2> /dev/null; STORAGE_ACCOUNT_KEY=$(STORAGE_ACCOUNT_KEY) python3 genparams.py > parameters/cluster.json
 
 # Cleanup parameters
 clean:
 	rm -rf parameters
 
 deploy-storage:
-	-az group create --name $(STORAGE_GROUP) --location $(LOCATION) --output table 
+	-az group create --name $(STORAGE_GROUP) --location $(LOCATION) --output table
 	-az storage account create \
 		--name $(STORAGE_ACCOUNT_NAME) \
 		--resource-group $(STORAGE_GROUP) \
@@ -65,8 +65,8 @@ deploy-storage:
 
 # Create a resource group and deploy the cluster resources inside it
 deploy-compute:
-	-az group create --name $(COMPUTE_GROUP) --location $(LOCATION) --output table 
-	az group deployment create \
+	-az group create --name $(COMPUTE_GROUP) --location $(LOCATION) --output table
+	az deployment group create \
 		--template-file templates/cluster.json \
 		--parameters @parameters/cluster.json \
 		--resource-group $(COMPUTE_GROUP) \
@@ -177,7 +177,7 @@ tail-helper:
 
 # View deployment details
 view-deployment:
-	az group deployment operation list \
+	az deployment operation group list \
 		--resource-group $(COMPUTE_GROUP) \
 		--name cli-$(LOCATION) \
 		--query "[].{OperationID:operationId,Name:properties.targetResource.resourceName,Type:properties.targetResource.resourceType,State:properties.provisioningState,Status:properties.statusCode}" \
@@ -188,7 +188,7 @@ list-agents:
 	az vmss list-instances \
 		--resource-group $(COMPUTE_GROUP) \
 		--name $(VMSS_NAME) \
-		--output table 
+		--output table
 
 # Scale VMSS instances
 scale-agents-%:
@@ -248,3 +248,5 @@ list-endpoints:
 		--resource-group $(COMPUTE_GROUP) \
 		--query '[].{dnsSettings:dnsSettings.fqdn}' \
 		--output table
+ssh-master:
+	$(SSH_TO_MASTER)

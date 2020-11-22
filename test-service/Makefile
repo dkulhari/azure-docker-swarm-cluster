@@ -1,5 +1,5 @@
 export PORT=8000
-IMAGE_NAME=rcarmo/demo-frontend
+IMAGE_NAME=dkulhari/demo-frontend
 
 build-container:
 	docker build -t $(IMAGE_NAME) src

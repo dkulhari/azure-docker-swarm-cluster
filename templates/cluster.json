@@ -594,6 +594,25 @@
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers',parameters('agentPrefix')),'/probes/tcpProbe')]"
               }
             }
+          },
+          {
+            "name": "HttpsRule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',parameters('agentPrefix')),'/frontendIPConfigurations/loadBalancerFrontEnd')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',parameters('agentPrefix')),'/backendAddressPools/agentPool')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 443,
+              "backendPort": 443,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 5,
+              "probe": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',parameters('agentPrefix')),'/probes/tcpProbe')]"
+              }
+            }
           }
         ],
         "probes": [
